@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#111725" />
+    <title>Orbit Swarm · 多模式 Agent 工作台</title>
+    <link rel="stylesheet" href="/styles.css?v=orbit-v5" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="rail" aria-label="工作区">
+        <div class="brand-row">
+          <div class="brand-mark" aria-hidden="true">O</div>
+          <div>
+            <strong>Orbit Swarm</strong>
+            <span>动态 Agent 集群</span>
+          </div>
+        </div>
+
+        <section class="mode-switcher" aria-labelledby="modeLabel">
+          <div class="section-kicker" id="modeLabel">运行模式</div>
+          <label class="select-wrap">
+            <select id="modeSelect" aria-label="选择运行模式">
+              <option value="0">模式 0 · 单 Agent</option>
+              <option value="1">模式 1 · 中档集群</option>
+              <option value="2" selected>模式 2 · 高档集群</option>
+              <option value="3">模式 3 · 极限集群</option>
+            </select>
+          </label>
+          <p id="modeDescription" class="mode-description">由架构师与多组专家并行协作，自动汇总结果。</p>
+        </section>
+
+        <section class="rail-pulse" aria-label="集群概览">
+          <div class="pulse-top"><span class="live-dot" id="railLiveDot"></span><span id="railConnectionText">正在连接</span></div>
+          <div class="pulse-number"><b id="railOnlineCount">0</b><span>在线 Agent</span></div>
+          <div class="pulse-bar"><i id="railCapacityBar"></i></div>
+          <div class="pulse-meta"><span id="railSlotText">0 / 0 槽位</span><span id="railHealthText">健康检查中</span></div>
+        </section>
+
+        <div class="section-kicker recent-kicker">最近任务</div>
+        <nav id="taskList" class="task-list" aria-label="最近任务"></nav>
+
+        <div class="rail-footer">
+          <span class="operator-avatar">J</span>
+          <div><strong>本地操作员</strong><small>私有工作区</small></div>
+          <button type="button" id="refreshButton" class="icon-button" title="刷新状态" aria-label="刷新状态">↻</button>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div class="topbar-title">
+            <div class="section-kicker">多模式动态 Agent 集群</div>
+            <h1 id="appTitle">准备接收任务</h1>
+          </div>
+          <div class="topbar-actions">
+            <span class="connection-pill" id="connectionPill"><i></i><span>本地服务</span></span>
+            <button type="button" class="icon-button settings-button" id="settingsButton" title="Provider 与路由设置" aria-label="Provider 与路由设置">⚙</button>
+            <button type="button" class="icon-button" id="languageButton" title="切换语言" aria-label="切换语言">中</button>
+          </div>
+        </header>
+
+        <div id="alertStack" class="alert-stack" role="alert" aria-live="assertive"></div>
+
+        <section class="run-strip" aria-label="当前任务状态">
+          <div class="run-title"><span class="run-state" id="runState">空闲</span><h2 id="runTitle">等待你的第一个任务</h2></div>
+          <div class="run-metrics"><span><b id="runAgentCount">0</b> Agent</span><span><b id="runEventCount">0</b> 事件</span><span id="runElapsed">00:00</span></div>
+        </section>
+
+        <section id="feed" class="feed" aria-live="polite" aria-label="协作消息">
+          <div id="emptyState" class="empty-state">
+            <div class="empty-orbit" aria-hidden="true"><i></i><i></i><i></i><b>O</b></div>
+            <h2>把目标交给集群</h2>
+            <p>只需描述你想完成的结果。系统会自动识别意图、选择岗位、处理分歧并汇总答案。</p>
+            <div class="quick-prompts" aria-label="示例任务">
+              <button type="button" data-prompt="重构登录模块，支持 OAuth2 并补充自动化测试">重构登录模块 · OAuth2</button>
+              <button type="button" data-prompt="审计当前 API 的安全风险并给出修复清单">审计 API 安全风险</button>
+              <button type="button" data-prompt="为当前服务设计一套可观测性与压测方案">设计压测与可观测性</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="composer-dock" aria-label="任务输入">
+          <form id="composer" class="composer">
+            <textarea id="promptInput" rows="2" maxlength="8000" placeholder="描述你要完成的事情，集群会自动协作……" aria-label="输入任务"></textarea>
+            <div class="composer-bottom">
+              <span class="composer-hint"><kbd>Ctrl</kbd><span>+</span><kbd>Enter</kbd> 发送 · 所有岗位自动协调</span>
+              <div class="composer-actions"><span id="composerStatus" class="composer-status" role="status"></span><button type="submit" class="send-button" id="sendButton"><span>发送任务</span><b aria-hidden="true">↗</b></button></div>
+            </div>
+          </form>
+        </section>
+      </main>
+
+      <aside class="inspector" aria-label="集群状态与检索">
+        <section class="inspector-head">
+          <div><div class="section-kicker">集群遥测</div><h2>实时状态</h2></div>
+          <span class="health-badge" id="healthBadge">检查中</span>
+        </section>
+        <section class="fleet-card">
+          <div class="fleet-mode"><span id="fleetModeName">模式 2 · 高档集群</span><span id="fleetModeCount">0 / 20</span></div>
+          <div class="fleet-track"><i id="fleetTrackBar"></i></div>
+          <div class="fleet-foot"><span id="fleetOnlineText">0 个岗位在线</span><span id="fleetUpdatedAt">--:--:--</span></div>
+        </section>
+
+        <section class="inspector-section">
+          <div class="inspector-section-title"><h3>岗位池</h3><span id="rolePoolSummary">0 个岗位</span></div>
+          <div id="roleBreakdown" class="role-breakdown"></div>
+        </section>
+
+        <section class="inspector-section log-section">
+          <div class="inspector-section-title"><h3>日志检索</h3><span>事件与消息</span></div>
+          <button id="logSearchToggle" type="button" class="log-search-toggle"><span>使用主输入框检索</span><b aria-hidden="true">⌕</b></button>
+          <div id="logResults" class="log-results"><p class="muted">输入关键词检索集群历史记录。</p></div>
+        </section>
+
+        <section class="inspector-section event-stream-section">
+          <div class="inspector-section-title"><h3>状态流</h3><span id="statusStreamCount">0</span></div>
+          <div id="statusStream" class="status-stream"><p class="muted">等待集群事件……</p></div>
+        </section>
+      </aside>
+    </div>
+
+    <div id="settingsOverlay" class="settings-overlay" hidden>
+      <section class="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <header class="settings-panel-head">
+          <div><div class="section-kicker">RUNTIME CONTROL</div><h2 id="settingsTitle">Provider 与路由设置</h2></div>
+          <button type="button" class="icon-button" id="settingsClose" title="关闭" aria-label="关闭">×</button>
+        </header>
+        <div id="settingsNotice" class="settings-notice" role="status"></div>
+        <div class="settings-grid">
+          <section class="settings-section">
+            <div class="settings-section-head"><h3>Provider 目录</h3><button type="button" class="small-button" id="providerNewButton">+ 新增</button></div>
+            <div id="providerList" class="provider-list"><p class="muted">正在加载 Provider…</p></div>
+            <form id="providerForm" class="provider-form">
+              <input type="hidden" id="providerId" />
+              <label>标识<input id="providerName" maxlength="64" placeholder="例如 codekey" required /></label>
+              <label>显示名称<input id="providerDisplayName" maxlength="120" placeholder="例如 CodeKey" /></label>
+              <label>接口地址<input id="providerBaseUrl" maxlength="500" placeholder="https://example.com/v1" required /></label>
+              <label>协议<select id="providerProtocol"><option value="openai_chat">OpenAI Chat Completions</option><option value="anthropic_messages">Anthropic Messages</option></select></label>
+              <label>模型列表<input id="providerModels" maxlength="800" placeholder="model-a, model-b" /></label>
+              <label>密钥（只写入内存）<input id="providerApiKey" type="password" autocomplete="new-password" placeholder="留空则保留现有密钥" /></label>
+              <label>密钥环境变量<input id="providerKeyRef" maxlength="120" placeholder="例如 CODEKEY_API_KEY" /></label>
+              <div class="settings-form-actions"><button type="submit" class="primary-button">保存 Provider</button><button type="button" class="ghost-button" id="providerDisableButton">停用</button></div>
+            </form>
+          </section>
+          <section class="settings-section route-section">
+            <div class="settings-section-head"><h3>职位模型路由</h3><span class="muted">只影响新任务</span></div>
+            <div class="route-toolbar"><label>模式<select id="routeMode"><option value="0">模式 0</option><option value="1">模式 1</option><option value="2">模式 2</option><option value="3">模式 3</option></select></label><button type="button" class="small-button" id="routeResetButton">恢复默认</button></div>
+            <div class="role-profile-head"><span>岗位清单</span><button type="button" class="small-button" id="roleAddButton">+ 添加岗位</button></div>
+            <div id="roleProfileList" class="role-profile-list"><p class="muted">正在加载岗位清单...</p></div>
+            <div id="routeList" class="route-list"><p class="muted">选择模式后加载职位路由…</p></div>
+            <div class="settings-form-actions"><button type="button" class="primary-button" id="routeSaveButton">保存岗位与路由</button></div>
+          </section>
+        </div>
+      </section>
+    </div>
+    <script src="/app.js?v=orbit-v5" defer></script>
+  </body>
+</html>
